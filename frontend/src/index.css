@@ -1,0 +1,60 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { scroll-behavior: smooth; }
+  body {
+    @apply bg-cream-50 text-gray-900 font-sans;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1,h2,h3,h4,h5,h6 { @apply font-display; }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-coffee-600 hover:bg-coffee-700 text-white px-6 py-3 rounded-full font-semibold transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0;
+  }
+  .btn-secondary {
+    @apply border-2 border-coffee-600 text-coffee-600 hover:bg-coffee-600 hover:text-white px-6 py-3 rounded-full font-semibold transition-all duration-300;
+  }
+  .btn-ghost {
+    @apply text-coffee-600 hover:bg-coffee-50 px-4 py-2 rounded-lg font-medium transition-colors duration-200;
+  }
+  .card {
+    @apply bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300;
+  }
+  .input-field {
+    @apply w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-coffee-400 focus:border-transparent bg-white transition-all duration-200;
+  }
+  .section-title {
+    @apply text-4xl md:text-5xl font-display font-bold text-coffee-900 mb-4;
+  }
+  .section-subtitle {
+    @apply text-lg text-coffee-600 font-light mb-12 max-w-2xl mx-auto;
+  }
+  .badge {
+    @apply inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full;
+  }
+  .container-custom {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+  .gradient-text {
+    @apply bg-gradient-to-r from-coffee-700 to-coffee-400 bg-clip-text text-transparent;
+  }
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-sm border border-white/50 rounded-2xl shadow-lg;
+  }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { @apply bg-cream-100; }
+::-webkit-scrollbar-thumb { @apply bg-coffee-400 rounded-full; }
+::-webkit-scrollbar-thumb:hover { @apply bg-coffee-600; }
+
+/* Dark mode */
+.dark body { @apply bg-gray-950 text-gray-100; }
+.dark .card { @apply bg-gray-900 border border-gray-800; }
+.dark .input-field { @apply bg-gray-800 border-gray-700 text-white; }
+.dark .glass-card { @apply bg-gray-900/80 border-gray-700/50; }

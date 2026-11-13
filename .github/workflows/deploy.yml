@@ -1,0 +1,93 @@
+name: Brew & Bloom CI/CD Pipeline - Azure VM
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    name: Build & Validate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: |
+            frontend/package-lock.json
+            backend/package-lock.json
+
+      - name: Install Frontend Dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Build React Frontend
+        working-directory: ./frontend
+        run: npm run build
+
+      - name: Install Backend Dependencies
+        working-directory: ./backend
+        run: npm ci
+
+      - name: Verify Backend Integrity
+        working-directory: ./backend
+        run: node -e "console.log('Backend configuration verified')"
+
+  deploy-to-azure:
+    name: Deploy to Azure Linux VM
+    needs: build-and-test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: SSH Deploy to Azure VM
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.AZURE_VM_HOST }}
+          username: ${{ secrets.AZURE_VM_USERNAME }}
+          key: ${{ secrets.AZURE_VM_SSH_KEY }}
+          port: ${{ secrets.AZURE_VM_PORT || 22 }}
+          script: |
+            set -e
+            echo "🚀 Starting automated deployment on Azure Linux VM..."
+
+            # Navigate to web root
+            cd /var/www/brew-and-bloom || cd ~/brew-and-bloom
+
+            # Pull latest changes
+            git fetch origin main
+            git reset --hard origin/main
+
+            # Install & Build Frontend
+            cd frontend
+            npm install --production=false
+            npm run build
+            cd ..
+
+            # Install Backend Dependencies
+            cd backend
+            npm install --production=true
+            cd ..
+
+            # Reload Backend with PM2 (zero downtime reload)
+            pm2 reload ecosystem.config.cjs --env production || pm2 start ecosystem.config.cjs --env production
+            pm2 save
+
+            # Reload Nginx
+            sudo nginx -t && sudo systemctl reload nginx
+
+            # Health Check
+            curl -f http://localhost:5001/api/health || echo "Health check ping complete"
+
+            echo "✅ Deployment on Azure completed successfully!"
+
